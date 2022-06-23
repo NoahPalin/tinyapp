@@ -19,6 +19,10 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
+
+  shortURL = generateRandomString(); // Generates a random 6 character string for the short URL.
+  urlDatabase[shortURL] = req.body.longURL; //Adds the new key-value pair to the URL database.
+  //console.log(urlDatabase); // Logs to the console (for my own viewing).
 });
 
 function generateRandomString() {
