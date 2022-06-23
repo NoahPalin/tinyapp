@@ -60,6 +60,13 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+///////////////////////////////////////////////////
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect(`/urls`);
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   const templateVars = { shortURL: req.params.shortURL, longURL: longURL };
