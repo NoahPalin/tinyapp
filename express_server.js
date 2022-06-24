@@ -20,8 +20,7 @@ app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
 
   shortURL = generateRandomString(); // Generates a random 6 character string for the short URL.
-  urlDatabase[shortURL] = req.body.longURL; //Adds the new key-value pair to the URL database.
-  //console.log(urlDatabase); // Logs to the console (for my own viewing).
+  urlDatabase[shortURL] = `http://www.${req.body.longURL}`; //Adds the new key-value pair to the URL database.
 
   res.redirect(`/urls/${shortURL}`);
 });
@@ -60,6 +59,18 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.post("/urls/:shortURL/edit", (req, res) => {
+  shortURL = req.params.shortURL;
+  res.redirect(`/urls/${shortURL}`);
+});
+
+// Currently working on.
+app.post("/u/:shortURL/edit", (req, res) => {
+  shortURL = req.params.shortURL;
+  urlDatabase[shortURL] = `http://www.${req.body.editURL}`
+  res.redirect(`/urls`);
+});
+
 ///////////////////////////////////////////////////
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
@@ -75,7 +86,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(`http://${longURL}`);
+  res.redirect(longURL);
 });
 
 app.listen(PORT, () => {
