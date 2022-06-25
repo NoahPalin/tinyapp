@@ -2,7 +2,9 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
+var cookieParser = require('cookie-parser')
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser())
 
 app.set("view engine", "ejs");
 
@@ -11,8 +13,20 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// Allow user to login with username.
+app.post("/login", (req, res) => {
+  //console.log(req.body.username);
+  res.cookie ("username", req.body.username);
+  res.redirect('/urls');
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect('/urls');
+})
+
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -56,7 +70,8 @@ app.get("/fetch", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {username: req.cookies["username"]};
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls/:shortURL/edit", (req, res) => {
@@ -64,7 +79,6 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// Currently working on.
 app.post("/u/:shortURL/edit", (req, res) => {
   shortURL = req.params.shortURL;
   urlDatabase[shortURL] = `http://www.${req.body.editURL}`
@@ -80,7 +94,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  const templateVars = { shortURL: req.params.shortURL, longURL: longURL };
+  const templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL, longURL: longURL };
   res.render("urls_show", templateVars);
 });
 
