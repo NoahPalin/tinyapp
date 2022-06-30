@@ -26,28 +26,57 @@ const users = {
   }
 };
 
-// Allow user to login with username.
-app.post("/login", (req, res) => {
-  res.cookie ("username", req.body.username);
-  res.redirect('/urls');
-});
-
-// Allows user to logout.
-app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  res.redirect('/urls');
-})
-
 // Homepage.
 app.get("/urls", (req, res) => {
   const templateVars = { user: users[req.cookies.user_id], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
-// View user registration page.
-app.get("/register", (req, res) => {  
+// View user login page (currently is a registrattion page).
+app.get("/login", (req, res) => {  
+  //console.log(users[req.cookies.user_id]);
   const templateVars = { user: users[req.cookies.user_id], urls: urlDatabase };
-  res.render("urls_register", templateVars);
+  res.render("urls_login", templateVars);
+});
+
+// Login.//////////////////
+app.post("/login", (req, res) => {
+  for (let key in users) {
+    if (req.body.email === users[key].email && req.body.password === users[key].password) {
+      // console.log(req.body.email);
+      // console.log(findID(req.body.email));
+      res.cookie("user_id", findID(req.body.email));
+      res.redirect("/urls");
+      return;
+    }
+  }
+  res.send("ERROR 403");
+});
+
+// Used to find a user ID with their matching email.
+const findID = function (email) {
+  for (let id in users) {
+    //console.log(id);
+    if (email === users[id].email) {
+      //console.log("LOOK HERE: " + id);
+      return id;
+    }
+  }
+}
+
+// Logout.
+app.post("/logout", (req, res) => {
+  //console.log(users[req.cookies.user_id]);
+  res.clearCookie("user_id");
+  res.redirect("/urls");
+});
+
+
+// View new user registration page.
+app.get("/register", (req, res) => {
+
+  const templateVars = { user: users[req.cookies.user_id], urls: urlDatabase };
+  res.render("urls_register", templateVars)
 });
 
 // Register a new user.
@@ -63,9 +92,8 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: req.body.password
     };
-    res.cookie ("user_id", newID);
-    res.redirect('/urls');
   }
+  res.redirect("/login");
   //console.log(users);
 });
 
