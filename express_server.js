@@ -2,15 +2,22 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
-var cookieParser = require('cookie-parser')
+var cookieParser = require('cookie-parser');
+const { shallowCopy } = require("ejs/lib/utils");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
 
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+        longURL: "https://www.tsn.ca",
+        userID: "aJ48lW"
+    },
+    i3BoGr: {
+        longURL: "https://www.google.ca",
+        userID: "aJ48lW"
+    }
 };
 
 const users = { 
@@ -23,12 +30,30 @@ const users = {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
+  },
+  "aJ48lW": {
+    id: "aJ48lW", 
+    email: "example@gmail.com", 
+    password: "123"
   }
 };
 
-// Homepage.
+const findURLbyID = function (userID) {
+  const userURLs = {};
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === userID) {
+      userURLs[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userURLs;
+};
+
+// Homepage. ///////////////////////////////////////////////////////////////////
 app.get("/urls", (req, res) => {
-  const templateVars = { user: users[req.cookies.user_id], urls: urlDatabase };
+  // console.log(req.cookies.user_id)
+  const userURLs = findURLbyID(req.cookies.user_id)
+  // console.log(userURLs);
+  const templateVars = { user: users[req.cookies.user_id], urls: userURLs };
   res.render("urls_index", templateVars);
 });
 
@@ -39,7 +64,7 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateVars);
 });
 
-// Login.//////////////////
+// Login.
 app.post("/login", (req, res) => {
   for (let key in users) {
     if (req.body.email === users[key].email && req.body.password === users[key].password) {
@@ -98,9 +123,10 @@ app.post("/register", (req, res) => {
 });
 
 // Creates a new short URL.
-app.post("/urls", (req, res) => {
+app.post("/urls/new", (req, res) => {
   shortURL = generateRandomString(); // Generates a random 6 character string for the short URL.
-  urlDatabase[shortURL] = `http://www.${req.body.longURL}`; //Adds the new key-value pair to the URL database.
+  urlDatabase[shortURL] = {longURL: `http://www.${req.body.longURL}`, userID: req.cookies.user_id}; //Adds the new key-value pair to the URL database.
+  //console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -147,8 +173,13 @@ app.get("/fetch", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = {user: users[req.cookies.user_id]};
-  res.render("urls_new", templateVars);
+  if (users[req.cookies.user_id]) {
+    const templateVars = {user: users[req.cookies.user_id]};
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/urls");
+  }
+  
 });
 
 app.post("/urls/:shortURL/edit", (req, res) => {
@@ -156,27 +187,43 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+// Edit an existing URL.
 app.post("/u/:shortURL/edit", (req, res) => {
   shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = `http://www.${req.body.editURL}`
-  res.redirect(`/urls`);
+
+  console.log("COOKIES: " + req.cookies.user_id);
+  console.log("DATABASE ID: " + urlDatabase[shortURL].userID);
+  if (req.cookies.user_id === urlDatabase[shortURL].userID) {
+    urlDatabase[shortURL].longURL = `http://www.${req.body.editURL}`
+    res.redirect(`/urls`);
+    return;
+  } else {
+    res.send("That URL does not belong to your account.")
+  }
+  
 });
 
-///////////////////////////////////////////////////
+// Delete an existing URL.
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect(`/urls`);
+  console.log(urlDatabase);
+  console.log(req.cookies);
+  if (req.cookies.user_id === urlDatabase[shortURL].userID) {
+    delete urlDatabase[shortURL];
+    res.redirect(`/urls`);
+    return;
+  } else {
+    res.status(403).send("That URL does not belong to your account."); // add more of these messages to other errors.
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  const templateVars = { user: users[req.cookies.user_id], shortURL: req.params.shortURL, longURL: longURL };
+  const templateVars = { user: users[req.cookies.user_id], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
