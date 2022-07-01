@@ -182,13 +182,13 @@ app.get("/urls/new", (req, res) => {
   
 });
 
-app.post("/urls/:shortURL/edit", (req, res) => {
+app.get("/u/:shortURL", (req, res) => {
   shortURL = req.params.shortURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
 // Edit an existing URL.
-app.post("/u/:shortURL/edit", (req, res) => {
+app.post("/urls/:shortURL/edit", (req, res) => {
   shortURL = req.params.shortURL;
 
   console.log("COOKIES: " + req.cookies.user_id);
@@ -198,7 +198,7 @@ app.post("/u/:shortURL/edit", (req, res) => {
     res.redirect(`/urls`);
     return;
   } else {
-    res.send("That URL does not belong to your account.")
+    res.status(403).send("That URL does not belong to your account.");
   }
   
 });
@@ -206,14 +206,13 @@ app.post("/u/:shortURL/edit", (req, res) => {
 // Delete an existing URL.
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  console.log(urlDatabase);
   console.log(req.cookies);
   if (req.cookies.user_id === urlDatabase[shortURL].userID) {
     delete urlDatabase[shortURL];
     res.redirect(`/urls`);
     return;
   } else {
-    res.status(403).send("That URL does not belong to your account."); // add more of these messages to other errors.
+    res.status(403).send("That URL does not belong to your account or does not exist."); // add more of these messages to other errors.
   }
 });
 
