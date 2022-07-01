@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
+const bcrypt = require('bcryptjs');
 var cookieParser = require('cookie-parser');
 const { shallowCopy } = require("ejs/lib/utils");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -67,12 +68,12 @@ app.get("/login", (req, res) => {
 // Login.
 app.post("/login", (req, res) => {
   for (let key in users) {
-    if (req.body.email === users[key].email && req.body.password === users[key].password) {
-      // console.log(req.body.email);
-      // console.log(findID(req.body.email));
-      res.cookie("user_id", findID(req.body.email));
-      res.redirect("/urls");
-      return;
+    if (bcrypt.compareSync(req.body.password, users[key].password)) {
+      if (req.body.email === users[key].email) {
+        res.cookie("user_id", findID(req.body.email));
+        res.redirect("/urls");
+        return;
+      }
     }
   }
   res.send("ERROR 403");
@@ -111,11 +112,13 @@ app.post("/register", (req, res) => {
   } else if (emailChecker(req.body.email) === true) {
     res.send("ERROR 400: The entered email has already been used.");
   } else {
+    const unhashedPassword = req.body.password;
+    const hashedPassword = bcrypt.hashSync(unhashedPassword, 10);
     let newID = generateRandomString();
     users[newID] = {
       id: newID,
       email: req.body.email,
-      password: req.body.password
+      password: hashedPassword
     };
   }
   res.redirect("/login");
