@@ -194,6 +194,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 // View the short URL just made by the user.
 app.get('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
 
   // If the user ID matches the ID attacthed to the URL they are trying to view.
   if (req.session.user_id === urlDatabase[shortURL].userID) {
