@@ -6,7 +6,9 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["The homepage of TinyApp where the user's URLs are displayed."](https://github.com/NoahPalin/tinyapp/blob/master/docs/urls-page.png)
 
+
 !["The edit screen where a user can edit a previously created URL."](https://github.com/NoahPalin/tinyapp/blob/master/docs/edit-page.png)
+
 
 !["The page where a user can register for TinyApp."](https://github.com/NoahPalin/tinyapp/blob/master/docs/register-page.png)
 
