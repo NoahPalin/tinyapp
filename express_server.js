@@ -148,7 +148,7 @@ app.post('/urls/new', (req, res) => {
 
   // Adds the new key-value pair to the URL database.
   urlDatabase[shortURL] = { 
-    longURL: `http://www.${req.body.longURL}`, 
+    longURL: `http://${req.body.longURL}`, 
     userID: req.session.user_id 
   };
   res.redirect(`/urls/${shortURL}`);
@@ -194,8 +194,15 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 // View the short URL just made by the user.
 app.get('/urls/:shortURL', (req, res) => {
-  const templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
-  res.render('urls_show', templateVars);
+
+  // If the user ID matches the ID attacthed to the URL they are trying to view.
+  if (req.session.user_id === urlDatabase[shortURL].userID) {
+    const templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
+    res.render('urls_show', templateVars);
+    return;
+  } else {
+    res.status(403).send('That URL does not belong to your account.');
+  }
 });
 
 // Redirect user to the long URL. 
