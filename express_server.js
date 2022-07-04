@@ -64,7 +64,12 @@ const users = {
 // Routes.
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-// Display homepage.
+// Direct homepage.
+app.get('/', (req, res) => {
+  res.redirect('/urls');
+});
+
+// Display URLs.
 app.get('/urls', (req, res) => {
   const userURLs = findURLbyID(req.session.user_id, urlDatabase);
   const templateVars = { user: users[req.session.user_id], urls: userURLs };
@@ -121,8 +126,18 @@ app.post('/register', (req, res) => {
       email: req.body.email,
       password: hashedPassword
     };
+
+    for (let key in users) {
+      if (bcrypt.compareSync(req.body.password, users[key].password)) {
+        if (req.body.email === users[key].email) {
+          req.session.user_id = findID(req.body.email, users);
+          res.redirect('/urls');
+          return;
+        }
+      }
+    }
   }
-  res.redirect('/login');
+  res.redirect('/urls');
 });
 
 // Create a new short URL.
