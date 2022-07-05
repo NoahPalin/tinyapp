@@ -64,9 +64,13 @@ const users = {
 // Routes.
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-// Direct homepage.
+// Direct homepage or login.
 app.get('/', (req, res) => {
-  res.redirect('/urls');
+  if (!users[req.session.user_id]) {
+    res.redirect('/login');
+  } else {
+    res.redirect('/urls');
+  }
 });
 
 // Display URLs.
@@ -78,8 +82,11 @@ app.get('/urls', (req, res) => {
 
 // View user login page.
 app.get('/login', (req, res) => {
-  const templateVars = { user: users[req.session.user_id], urls: urlDatabase };
-  res.render('urls_login', templateVars);
+  if (users[req.session.user_id]) {
+    res.redirect('/urls');
+  } else {
+    const templateVars = { user: users[req.session.user_id], urls: urlDatabase };
+    res.render('urls_login', templateVars);  }
 });
 
 // Login and saves user information as a cookie.
@@ -162,7 +169,7 @@ app.get('/urls/new', (req, res) => {
     const templateVars = { user: users[req.session.user_id] };
     res.render('urls_new', templateVars);
   } else {
-    res.redirect('/urls');
+    res.redirect('/login');
   }
 });
 
