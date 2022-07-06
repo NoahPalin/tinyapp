@@ -147,7 +147,7 @@ app.post('/urls/new', (req, res) => {
 
   // Adds the new key-value pair to the URL database.
   urlDatabase[shortURL] = { 
-    longURL: `http://${req.body.longURL}`, 
+    longURL: req.body.longURL, 
     userID: req.session.user_id 
   };
   res.redirect(`/urls/${shortURL}`);
@@ -171,7 +171,7 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 
   // If the user ID matches the ID attacthed to the URL they are trying to edit.
   if (req.session.user_id === urlDatabase[shortURL].userID) {
-    urlDatabase[shortURL].longURL = `http://www.${req.body.editURL}`;
+    urlDatabase[shortURL].longURL = `${req.body.editURL}`;
     res.redirect(`/urls`);
     return;
   } else {
@@ -195,13 +195,19 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
-  // If the user ID matches the ID attacthed to the URL they are trying to view.
-  if (req.session.user_id === urlDatabase[shortURL].userID) {
-    const templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
-    res.render('urls_show', templateVars);
-    return;
-  } else {
+  if(shortURL) {
+    
+    // If the user ID matches the ID attacthed to the URL they are trying to view.
+    if (req.session.user_id === urlDatabase[shortURL].userID) {
+      const templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
+      res.render('urls_show', templateVars);
+      return;
+    } else {
     res.status(403).send('That URL does not belong to your account.');
+    return;
+    }
+  } else {
+    res.status(404).send("That URL does not exist.")
   }
 });
 

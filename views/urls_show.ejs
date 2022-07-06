@@ -15,7 +15,7 @@
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %>
         </h5>
-        <p class="card-text">Short URL: <a href="<%= longURL %>">
+        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>">
             <%= shortURL %>
           </a></p>
         <div>
@@ -25,7 +25,7 @@
       <div class="d-flex justify-content-center">
         <form class="form-inline" method="POST" action=<%=`/urls/${shortURL}/edit` %>>
           <p>New URL:</p>
-          <input type="text" name="editURL" placeholder="www.example.com" class="form-control w-50"></input>
+          <input type="text" name="editURL" placeholder="" class="form-control w-50"></input>
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
       </div>
